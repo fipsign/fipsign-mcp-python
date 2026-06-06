@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fipsign-mcp"
+version = "0.1.0"
+description = "MCP server for FIPSign — post-quantum signing via ML-DSA-65 (NIST FIPS 204)"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "FIPSign", email = "sdk@fipsign.dev" }]
+keywords = [
+    "mcp", "model-context-protocol", "fipsign",
+    "post-quantum", "ml-dsa", "signing", "cryptography", "nist", "fips-204",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "mcp>=1.0.0",
+    "cryptography>=48.0.0",
+    "httpx>=0.24",
+]
+
+[project.scripts]
+fipsign-mcp = "fipsign_mcp.server:main"
+
+[project.urls]
+Homepage     = "https://fipsign.dev"
+Dashboard    = "https://app.fipsign.dev"
+Repository   = "https://github.com/fipsign/fipsign-mcp-python"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["fipsign_mcp*"]
+
+[tool.setuptools.package-data]
+fipsign_mcp = ["py.typed"]
