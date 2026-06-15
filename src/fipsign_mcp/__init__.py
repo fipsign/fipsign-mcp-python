@@ -8,4 +8,4 @@ Or via the installed entry point:
     fipsign-mcp
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

@@ -1,9 +1,9 @@
 """
 fipsign_mcp.server — MCP server for FIPSign post-quantum signing API.
 
-Exposes 15 tools covering the full FIPSign runtime API:
+Exposes 11 tools covering the full FIPSign runtime API:
 signing, verification, revocation, usage, CA certificate lifecycle,
-key pair generation, and webhook management.
+and key pair generation.
 
 Configuration (environment variables):
     FIPSIGN_API_KEY   — required for most tools (pqa_ + 64 hex chars)
@@ -435,96 +435,6 @@ TOOLS: list[Tool] = [
             "required": [],
         },
     ),
-
-    # ── Webhooks ─────────────────────────────────────────────────────────────────
-
-    Tool(
-        name="fipsign_webhooks_register",
-        description=(
-            "Register or update a webhook endpoint that will receive real-time event "
-            "notifications. Available events: 'token.signed', 'token.rejected', "
-            "'token.revoked', 'limit.warning' (fired at 20% free tokens remaining), "
-            "'limit.reached' (fired when free tokens are exhausted). If omitted, all events "
-            "are subscribed. Re-registering an existing webhook updates the URL and events "
-            "but preserves the original secret — to rotate the secret, delete and "
-            "re-register. The 'secret' field in the response is shown only once — store it "
-            "securely to verify incoming request signatures via HMAC-SHA256 on the "
-            "X-PQAuth-Signature header."
-        ),
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string",
-                    "description": (
-                        "HTTPS endpoint that will receive POST requests. Must be a valid "
-                        "HTTPS URL accessible from the internet. "
-                        "Example: 'https://yourapp.com/webhooks/fipsign'."
-                    ),
-                },
-                "events": {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": [
-                            "token.signed",
-                            "token.rejected",
-                            "token.revoked",
-                            "limit.warning",
-                            "limit.reached",
-                        ],
-                    },
-                    "description": (
-                        "Optional list of events to subscribe to. "
-                        "Defaults to all events if omitted."
-                    ),
-                },
-            },
-            "required": ["url"],
-        },
-    ),
-
-    Tool(
-        name="fipsign_webhooks_get",
-        description=(
-            "Get the current webhook configuration (URL, subscribed events, active status, "
-            "creation timestamp). The webhook secret is never returned after initial "
-            "registration — only the URL and event list. Returns null webhook if no webhook "
-            "has been registered."
-        ),
-        inputSchema={
-            "type": "object",
-            "properties": {},
-            "required": [],
-        },
-    ),
-
-    Tool(
-        name="fipsign_webhooks_delete",
-        description=(
-            "Delete the current webhook configuration. After deletion, no events will be "
-            "delivered until a new webhook is registered via fipsign_webhooks_register."
-        ),
-        inputSchema={
-            "type": "object",
-            "properties": {},
-            "required": [],
-        },
-    ),
-
-    Tool(
-        name="fipsign_webhooks_test",
-        description=(
-            "Send a test 'token.signed' event to the registered webhook endpoint. Use this "
-            "immediately after registering a webhook to confirm delivery is working before "
-            "relying on it in production. Requires a webhook to be registered first."
-        ),
-        inputSchema={
-            "type": "object",
-            "properties": {},
-            "required": [],
-        },
-    ),
 ]
 
 # ─── Tool handlers ────────────────────────────────────────────────────────────
@@ -567,7 +477,6 @@ async def handle_tool(name: str, args: dict[str, Any]) -> CallToolResult:
         if not token or not isinstance(token, dict):
             return _err('"token" is required and must be the token object returned by fipsign_sign')
         ok_flag, data = await api_request("POST", "/verify", {"token": token})
-        # verify returns valid:false on failure — not necessarily an HTTP error
         return _ok(data)
 
     if name == "fipsign_revoke":
@@ -638,36 +547,6 @@ async def handle_tool(name: str, args: dict[str, Any]) -> CallToolResult:
         ok_flag, data = await api_request("GET", "/ca/crl")
         if not ok_flag:
             return _err("CA get CRL failed", data)
-        return _ok(data)
-
-    if name == "fipsign_webhooks_register":
-        url = args.get("url")
-        if not url or not isinstance(url, str):
-            return _err('"url" is required')
-        body = {"url": url}
-        if "events" in args:
-            body["events"] = args["events"]
-        ok_flag, data = await api_request("POST", "/webhooks", body)
-        if not ok_flag:
-            return _err("Webhook register failed", data)
-        return _ok(data)
-
-    if name == "fipsign_webhooks_get":
-        ok_flag, data = await api_request("GET", "/webhooks")
-        if not ok_flag:
-            return _err("Webhook get failed", data)
-        return _ok(data)
-
-    if name == "fipsign_webhooks_delete":
-        ok_flag, data = await api_request("DELETE", "/webhooks")
-        if not ok_flag:
-            return _err("Webhook delete failed", data)
-        return _ok(data)
-
-    if name == "fipsign_webhooks_test":
-        ok_flag, data = await api_request("POST", "/webhooks/test")
-        if not ok_flag:
-            return _err("Webhook test failed", data)
         return _ok(data)
 
     return _err(f"Unknown tool: {name}")

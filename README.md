@@ -6,7 +6,7 @@
 
 MCP server for [FIPSign](https://fipsign.dev) — post-quantum digital signing via **ML-DSA-65** (NIST FIPS 204).
 
-Gives Claude Desktop, Claude Code, and any MCP-compatible AI agent full access to the FIPSign API without writing code: sign payloads, verify tokens, issue and revoke post-quantum certificates, manage webhooks, and monitor usage.
+Gives Claude Desktop, Claude Code, and any MCP-compatible AI agent full access to the FIPSign API without writing code: sign payloads, verify tokens, issue and revoke post-quantum certificates, and monitor usage.
 
 ---
 
@@ -25,10 +25,6 @@ Gives Claude Desktop, Claude Code, and any MCP-compatible AI agent full access t
 | `fipsign_ca_revoke_cert` | Revoke a certificate | 1 token |
 | `fipsign_ca_get_cert` | Get certificate status by ID | free |
 | `fipsign_ca_get_crl` | Get the Certificate Revocation List | free |
-| `fipsign_webhooks_register` | Register a webhook endpoint | free |
-| `fipsign_webhooks_get` | Get current webhook config | free |
-| `fipsign_webhooks_delete` | Delete webhook configuration | free |
-| `fipsign_webhooks_test` | Send a test event to your webhook | free |
 
 ---
 
@@ -209,8 +205,6 @@ Once configured, you can ask Claude:
 
 **Monitoring:**
 - *"How many tokens do I have left this month?"*
-- *"Register a webhook at https://myapp.com/hooks/fipsign for limit.warning and limit.reached events"*
-- *"Send a test event to my webhook"*
 
 ---
 
